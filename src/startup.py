@@ -9,6 +9,8 @@ def startup():
     print("doing startup things.")
     service_id = create_or_get_service_id()
     print (f"Service ID: {service_id}")
+    integration_key = get_or_create_events_v2_integration_key(service_id)
+    print (f"Integration Key: {integration_key}")
 
 
 def create_or_get_service_id():
@@ -52,4 +54,34 @@ def get_default_escalation_policy_id():
         else:
             raise Exception
     except PDClientError as e:
-        return e.msg
+        print(e.msg)
+
+def get_or_create_events_v2_integration_key(service_id):
+    print ("creating events integration")
+    try:
+        service = PagerDutyAPISession.rget(
+            f'/services/{service_id}'
+        )
+        if len(service['integrations']) >= 1:
+            integration_id = service['integrations'][0]['id']
+            integration = PagerDutyAPISession.rget(
+                f'/services/{service_id}/integrations/{integration_id}'
+            )
+        elif len(service['integrations']) == 0:
+            # create a new integration
+            integration = PagerDutyAPISession.rpost(
+                f'/services/{service_id}/integrations',
+                json={
+                    "integration": {
+                        "type": "events_api_v2_inbound_integration",
+                        "name": "EventsV2",
+                        "service": {
+                            "id": service_id,
+                            "type": "service_reference"
+                        },
+                    }
+                }
+            )
+        return integration['integration_key']
+    except PDClientError as e:
+        print(e.msg)
