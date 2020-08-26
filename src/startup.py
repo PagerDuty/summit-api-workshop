@@ -92,4 +92,7 @@ def get_or_create_events_v2_integration_key(service_id):
 def send_twitter_statuses_to_events_API(integration_key, statuses):
     print('hello')
     session = pdpyras.EventsAPISession(integration_key)
-    # What to do here... do we send each tweet with a `trigger` type? I dunno.
+    ## Next
+    ## Send each event with 'trigger' type
+    ## Make an event rule to suppress alerts created by these events that don't contain our magic word.
+    ## See: https://support.pagerduty.com/docs/event-management#section-event-rules
