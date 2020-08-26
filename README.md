@@ -5,4 +5,13 @@ https://trello.com/invite/b/ZvVWxQqj/54157ce521506adcdf62b907f05ec5e4/summit-api
 Requirements:
  - Pipenv
 
-Run server with: `FLASK_APP=server.py pipenv run python -m flask run`
+Setup:
+
+```
+cd src
+pipenv install
+pipenv shell
+export FLASK_APP=servier.py
+export FLASK_ENV=development
+flask run
+```
