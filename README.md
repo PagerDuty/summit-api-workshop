@@ -11,7 +11,7 @@ Setup:
 cd src
 pipenv install
 pipenv shell
-export FLASK_APP=servier.py
+export FLASK_APP=server.py
 export FLASK_ENV=development
 flask run
 ```
