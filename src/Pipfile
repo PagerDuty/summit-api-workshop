@@ -8,6 +8,7 @@ verify_ssl = true
 [packages]
 flask = "*"
 pdpyras = "*"
+requests = "*"
 
 [requires]
 python_version = "3.8"

@@ -1,16 +1,19 @@
 from pdpyras import APISession, PDClientError
 from os import environ as ENV
 
+import twitter
+
 
 SERVICE_NAME="PDSummit Twitter Service"
 PagerDutyAPISession = APISession(ENV.get('PAGERDUTY_REST_API_KEY'))
 
 def startup():
-    print("doing startup things.")
-    service_id = create_or_get_service_id()
-    print (f"Service ID: {service_id}")
-    integration_key = get_or_create_events_v2_integration_key(service_id)
-    print (f"Integration Key: {integration_key}")
+    twitter.query_twitter()
+    # print("doing startup things.")
+    # service_id = create_or_get_service_id()
+    # print (f"Service ID: {service_id}")
+    # integration_key = get_or_create_events_v2_integration_key(service_id)
+    # print (f"Integration Key: {integration_key}")
 
 
 def create_or_get_service_id():
@@ -85,3 +88,8 @@ def get_or_create_events_v2_integration_key(service_id):
         return integration['integration_key']
     except PDClientError as e:
         print(e.msg)
+
+def send_twitter_statuses_to_events_API(integration_key, statuses):
+    print('hello')
+    session = pdpyras.EventsAPISession(integration_key)
+    # What to do here... do we send each tweet with a `trigger` type? I dunno.
