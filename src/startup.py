@@ -1,4 +1,4 @@
-from pdpyras import APISession, PDClientError
+from pdpyras import APISession, PDClientError, EventsAPISession
 from os import environ as ENV
 
 import twitter
@@ -8,12 +8,13 @@ SERVICE_NAME="PDSummit Twitter Service"
 PagerDutyAPISession = APISession(ENV.get('PAGERDUTY_REST_API_KEY'))
 
 def startup():
-    twitter.query_twitter()
-    # print("doing startup things.")
-    # service_id = create_or_get_service_id()
-    # print (f"Service ID: {service_id}")
-    # integration_key = get_or_create_events_v2_integration_key(service_id)
-    # print (f"Integration Key: {integration_key}")
+    print("doing startup things.")
+    service_id = create_or_get_service_id()
+    print (f"Service ID: {service_id}")
+    integration_key = get_or_create_events_v2_integration_key(service_id)
+    print (f"Integration Key: {integration_key}")
+    twitter_statuses = twitter.query_twitter()
+    send_twitter_statuses_to_events_API(integration_key, twitter_statuses)
 
 
 def create_or_get_service_id():
@@ -90,8 +91,16 @@ def get_or_create_events_v2_integration_key(service_id):
         print(e.msg)
 
 def send_twitter_statuses_to_events_API(integration_key, statuses):
-    print('hello')
-    session = pdpyras.EventsAPISession(integration_key)
+    session = EventsAPISession(integration_key)
+
+    for status in statuses:
+        print("Triggering on Events API")
+        response = session.trigger(
+            f"Matching tweet from user @{status['user']['screen_name']}",
+            'twitter.com',
+            severity='info',
+            custom_details=status)
+        print(response)
     ## Next
     ## Send each event with 'trigger' type
     ## Make an event rule to suppress alerts created by these events that don't contain our magic word.
