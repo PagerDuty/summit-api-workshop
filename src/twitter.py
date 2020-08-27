@@ -10,9 +10,9 @@ def query_twitter():
         )
     if r.status_code == 401:
         print("401 Unauthorized, make sure you've entered the correct Bearer Token.")
-    if r.status_code == 400:
+    elif r.status_code == 400:
         print("400 Bad Request, make sure that your bearer token is entered.")
-    if r.status_code != 200:
+    elif r.status_code != 200:
         print("Non-200 response returned!")
         print(r.status_code)
     return r.json()['statuses']

@@ -11,10 +11,13 @@ def startup():
     print("doing startup things.")
     service_id = create_or_get_service_id()
     print (f"Service ID: {service_id}")
-    integration_key = get_or_create_events_v2_integration_key(service_id)
+    ruleset_id, integration_key = get_or_create_events_v2_integration_key(service_id)
     print (f"Integration Key: {integration_key}")
-    twitter_statuses = twitter.query_twitter()
-    send_twitter_statuses_to_events_API(integration_key, twitter_statuses)
+    create_event_rule(ruleset_id, service_id)
+
+    # TODO: Loop this.
+    # twitter_statuses = twitter.query_twitter()
+    # send_twitter_statuses_to_events_API(integration_key, twitter_statuses)
 
 
 def create_or_get_service_id():
@@ -59,36 +62,21 @@ def get_default_escalation_policy_id():
             raise Exception
     except PDClientError as e:
         print(e.msg)
+        print(e.response.text)
 
 def get_or_create_events_v2_integration_key(service_id):
     print ("creating events integration")
     try:
-        service = PagerDutyAPISession.rget(
-            f'/services/{service_id}'
+        rulesets = PagerDutyAPISession.rget(
+            f'/rulesets'
         )
-        if len(service['integrations']) >= 1:
-            integration_id = service['integrations'][0]['id']
-            integration = PagerDutyAPISession.rget(
-                f'/services/{service_id}/integrations/{integration_id}'
-            )
-        elif len(service['integrations']) == 0:
-            # create a new integration
-            integration = PagerDutyAPISession.rpost(
-                f'/services/{service_id}/integrations',
-                json={
-                    "integration": {
-                        "type": "events_api_v2_inbound_integration",
-                        "name": "EventsV2",
-                        "service": {
-                            "id": service_id,
-                            "type": "service_reference"
-                        },
-                    }
-                }
-            )
-        return integration['integration_key']
+        if len(rulesets) == 1:
+            return rulesets[0]['id'], rulesets[0]['routing_keys'][0]
+        else:
+            print("Found more global event rulesets than expected!")
     except PDClientError as e:
         print(e.msg)
+        print(e.response.text)
 
 def send_twitter_statuses_to_events_API(integration_key, statuses):
     session = EventsAPISession(integration_key)
@@ -100,8 +88,46 @@ def send_twitter_statuses_to_events_API(integration_key, statuses):
             'twitter.com',
             severity='info',
             custom_details=status)
-        print(response)
-    ## Next
-    ## Send each event with 'trigger' type
-    ## Make an event rule to suppress alerts created by these events that don't contain our magic word.
-    ## See: https://support.pagerduty.com/docs/event-management#section-event-rules
+
+def create_event_rule(ruleset_id, service_id):
+    try:
+        events_rules = PagerDutyAPISession.rget(
+            f'/rulesets/{ruleset_id}/rules'
+        )
+        if (len(events_rules)) == 2:
+            print("Event Rule already exists, moving on.")
+            return
+        print("Event Rule doesn't exist, creating.")
+        event_rule = PagerDutyAPISession.rpost(
+            f'/rulesets/{ruleset_id}/rules',
+            json={
+                "rule": {
+                    "conditions": {
+                        "operator": "or",
+                        "subconditions": [
+                            {
+                                "parameters": {
+                                    "value": "jenntejada",
+                                    "path": "payload.custom_details.entities.user_mentions"
+                                },
+                                "operator": "contains"
+                            }
+                        ],
+                    },
+                    "actions": {
+                        "severity": {
+                            "value": "critical"
+                        },
+                        "priority": {
+                            "value": "PD6DVC6"
+                        },
+                        "route": {
+                            "value": service_id
+                        }
+                    }
+                }
+            }
+        )
+    except PDClientError as e:
+        print(e.msg)
+        print(e.response.text)
