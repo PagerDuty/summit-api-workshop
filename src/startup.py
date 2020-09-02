@@ -15,9 +15,11 @@ def startup():
     print (f"Integration Key: {integration_key}")
     create_event_rule(ruleset_id, service_id)
 
-    # TODO: Loop this.
-    # twitter_statuses = twitter.query_twitter()
-    # send_twitter_statuses_to_events_API(integration_key, twitter_statuses)
+    # Loop until the program is exited!
+    while True:
+        twitter_statuses = twitter.query_twitter()
+        send_twitter_statuses_to_events_API(integration_key, twitter_statuses)
+        time.sleep(15)
 
 
 def create_or_get_service_id():
