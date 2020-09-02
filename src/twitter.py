@@ -5,8 +5,10 @@ def query_twitter():
     print ("query twitter")
     bearer_token = ENV.get('TWITTER_BEARER_TOKEN')
 
-    if not bearer_token:
+    if bearer_token is None:
+        print("none")
         r = requests.get('https://summit-mock-twitter-server.herokuapp.com/')
+        print(r.json()['statuses'])
         return r.json()['statuses']
 
     r = requests.get(

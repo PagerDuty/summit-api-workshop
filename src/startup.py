@@ -85,6 +85,7 @@ def send_twitter_statuses_to_events_API(integration_key, statuses):
 
     for status in statuses:
         print("Triggering on Events API")
+        print(status)
         response = session.trigger(
             f"Matching tweet from user @{status['user']['screen_name']}",
             'twitter.com',
