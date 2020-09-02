@@ -5,10 +5,9 @@ def query_twitter():
     print ("query twitter")
     bearer_token = ENV.get('TWITTER_BEARER_TOKEN')
 
+    # If the user doesn't have a Twitter Developer account then use the mock server.
     if bearer_token is None:
-        print("none")
         r = requests.get('https://summit-mock-twitter-server.herokuapp.com/')
-        print(r.json()['statuses'])
         return r.json()['statuses']
 
     r = requests.get(
