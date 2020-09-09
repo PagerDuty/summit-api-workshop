@@ -3,9 +3,11 @@ WIP WIP WIP it's a Work in Progress
 https://trello.com/invite/b/ZvVWxQqj/54157ce521506adcdf62b907f05ec5e4/summit-api-workshop
 
 Requirements:
+ - [Python 3.8]
  - [Pipenv]
 
-[Pipenv]: https://pypi.org/project/pipenv/
+ [Python 3.8]: https://www.python.org/downloads/
+ [Pipenv]: https://pypi.org/project/pipenv/
 
 Setup:
 
